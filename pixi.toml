@@ -1,0 +1,19 @@
+[workspace]
+name = "gatk-variant-calling"
+version = "0.1.0"
+description = "GATK variant calling workflow - from bash to Nextflow transformation"
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64"]
+
+[dependencies]
+bwa = "*"
+samtools = "*"
+gatk4 = "*"
+fastqc = "*"
+curl = "*"
+trim-galore = "*"
+bcftools = "*"
+bedtools = "*"
+snpeff = "*"
+htslib = "*"
+r-base = "*"

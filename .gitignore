@@ -1,0 +1,33 @@
+# Pixi environment
+.pixi/
+pixi.lock
+
+# Data directories
+data/
+reference/
+results/
+
+# Logs
+*.log
+pipeline.log
+
+# Intermediate files
+*.bam
+*.bai
+*.vcf
+*.vcf.idx
+*.table
+*.txt
+*.zip
+*.html
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

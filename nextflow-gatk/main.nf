@@ -17,6 +17,7 @@ include { SAMTOOLS_SORT } from './modules/samtools_sort'
 include { GATK_MARKDUPLICATES } from './modules/gatk_markduplicates'
 include { GATK_BASERECALIBRATOR } from './modules/gatk_baserecalibrator'
 include { GATK_APPLYBQSR } from './modules/gatk_applybqsr'
+include { GATK_COLLECTMETRICS } from './modules/gatk_collectmetrics'
 include { GATK_HAPLOTYPECALLER } from './modules/gatk_haplotypecaller'
 include { GATK_GENOTYPEGVCFS } from './modules/gatk_genotypegvcfs'
 include { GATK_SELECTVARIANTS_SNP } from './modules/gatk_selectvariants_snp'
@@ -24,6 +25,10 @@ include { GATK_VARIANTFILTRATION_SNP } from './modules/gatk_variantfiltration_sn
 include { GATK_SELECTVARIANTS_INDEL } from './modules/gatk_selectvariants_indel'
 include { GATK_VARIANTFILTRATION_INDEL } from './modules/gatk_variantfiltration_indel'
 include { GATK_MERGEVCFS } from './modules/gatk_mergevcfs'
+include { SNPEFF } from './modules/snpeff'
+include { BCFTOOLS_STATS } from './modules/bcftools_stats'
+include { BCFTOOLS_QUERY } from './modules/bcftools_query'
+include { BEDTOOLS_GENOMECOV } from './modules/bedtools_genomecov'
 
 /*
 ========================================================================================
@@ -116,6 +121,17 @@ workflow GATK_VARIANT_CALLING {
     ch_versions = ch_versions.mix(GATK_APPLYBQSR.out.versions)
     
     //
+    // STEP 8: Alignment Quality Assessment
+    //
+    GATK_COLLECTMETRICS (
+        GATK_APPLYBQSR.out.bam.join(GATK_APPLYBQSR.out.bai),
+        reference_ch.map { it[0] },
+        reference_ch.map { it[1] },
+        reference_ch.map { it[2] }
+    )
+    ch_versions = ch_versions.mix(GATK_COLLECTMETRICS.out.versions)
+    
+    //
     // STEP 9: Variant Calling with HaplotypeCaller (GVCF mode)
     //
     GATK_HAPLOTYPECALLER (
@@ -191,6 +207,41 @@ workflow GATK_VARIANT_CALLING {
     )
     ch_versions = ch_versions.mix(GATK_MERGEVCFS.out.versions)
     
+    //
+    // STEP 14: Functional Annotation with SnpEff
+    //
+    SNPEFF (
+        GATK_MERGEVCFS.out.vcf.join(GATK_MERGEVCFS.out.tbi),
+        params.snpeff_genome ?: 'GRCh38.mane.1.0.refseq'
+    )
+    ch_versions = ch_versions.mix(SNPEFF.out.versions)
+    
+    //
+    // STEP 15: Variant Statistics with bcftools
+    //
+    BCFTOOLS_STATS (
+        GATK_GENOTYPEGVCFS.out.vcf
+            .join(GATK_GENOTYPEGVCFS.out.tbi)
+            .join(GATK_MERGEVCFS.out.vcf)
+            .join(GATK_MERGEVCFS.out.tbi)
+    )
+    ch_versions = ch_versions.mix(BCFTOOLS_STATS.out.versions)
+    
+    //
+    // STEP 16: Create Visualization Files
+    //
+    // 16a: Create BED file from VCF with bcftools
+    BCFTOOLS_QUERY (
+        GATK_MERGEVCFS.out.vcf.join(GATK_MERGEVCFS.out.tbi)
+    )
+    ch_versions = ch_versions.mix(BCFTOOLS_QUERY.out.versions)
+    
+    // 16b: Generate coverage track with bedtools
+    BEDTOOLS_GENOMECOV (
+        GATK_APPLYBQSR.out.bam.join(GATK_APPLYBQSR.out.bai)
+    )
+    ch_versions = ch_versions.mix(BEDTOOLS_GENOMECOV.out.versions)
+    
     emit:
     fastqc_html = FASTQC.out.html
     fastqc_zip  = FASTQC.out.zip
@@ -199,6 +250,7 @@ workflow GATK_VARIANT_CALLING {
     gvcf = GATK_HAPLOTYPECALLER.out.gvcf
     raw_vcf = GATK_GENOTYPEGVCFS.out.vcf
     final_vcf = GATK_MERGEVCFS.out.vcf
+    annotated_vcf = SNPEFF.out.vcf
     versions = ch_versions
 }
 

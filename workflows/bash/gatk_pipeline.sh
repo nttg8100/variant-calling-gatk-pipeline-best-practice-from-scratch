@@ -20,11 +20,13 @@
 set -euo pipefail
 
 # Configuration
-SAMPLE="${1:-sample1}"  # Accept sample name as first argument, default to sample1
+SAMPLE="${SAMPLE:-sample1}"  # Can be set via environment variable or default to sample1
 THREADS=2
-DATA_DIR="data"
-REF_DIR="reference"
-RESULTS_DIR="results"
+
+# Paths relative to workflows/bash directory
+DATA_DIR="../../data"
+REF_DIR="../../reference"
+RESULTS_DIR="./results"
 
 # Reference files
 REFERENCE="${REF_DIR}/genome.fasta"
@@ -39,7 +41,8 @@ FASTQ_R2="${DATA_DIR}/${SAMPLE}_R2.fastq.gz"
 QC_DIR="${RESULTS_DIR}/qc/${SAMPLE}"
 TRIMMED_DIR="${RESULTS_DIR}/trimmed/${SAMPLE}"
 ALIGNED_DIR="${RESULTS_DIR}/aligned/${SAMPLE}"
-VAR_DIR="${RESULTS_DIR}/var/${SAMPLE}"
+VAR_DIR="${RESULTS_DIR}/variants/${SAMPLE}"
+BQSR_DIR="${RESULTS_DIR}/bqsr/${SAMPLE}"
 
 # Output files
 TRIMMED_R1="${TRIMMED_DIR}/${SAMPLE}_R1_val_1.fq.gz"
@@ -47,7 +50,7 @@ TRIMMED_R2="${TRIMMED_DIR}/${SAMPLE}_R2_val_2.fq.gz"
 ALIGNED_BAM="${ALIGNED_DIR}/${SAMPLE}.bam"
 SORTED_BAM="${ALIGNED_DIR}/${SAMPLE}.sorted.bam"
 DEDUP_BAM="${ALIGNED_DIR}/${SAMPLE}_marked_duplicates.bam"
-RECAL_TABLE="${ALIGNED_DIR}/${SAMPLE}_recal_data.table"
+RECAL_TABLE="${BQSR_DIR}/${SAMPLE}_recal_data.table"
 RECAL_BAM="${ALIGNED_DIR}/${SAMPLE}_recalibrated.bam"
 GVCF="${VAR_DIR}/${SAMPLE}.g.vcf.gz"
 RAW_VCF="${VAR_DIR}/${SAMPLE}_raw_variants.vcf.gz"
@@ -58,7 +61,7 @@ ANNOTATED_VCF="${VAR_DIR}/${SAMPLE}_annotated.vcf"
 METRICS="${ALIGNED_DIR}/${SAMPLE}_duplicate_metrics.txt"
 
 # Create output directories
-mkdir -p ${QC_DIR} ${TRIMMED_DIR} ${ALIGNED_DIR} ${VAR_DIR}
+mkdir -p ${QC_DIR} ${TRIMMED_DIR} ${ALIGNED_DIR} ${VAR_DIR} ${BQSR_DIR}
 
 echo "=========================================="
 echo "GATK Variant Calling Pipeline - Complete"

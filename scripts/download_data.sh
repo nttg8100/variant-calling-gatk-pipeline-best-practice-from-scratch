@@ -64,16 +64,30 @@ echo "✓ BWA index created"
 
 # Download test FASTQ files
 echo ""
-echo "Downloading test FASTQ files..."
+echo "Downloading test FASTQ files (3 samples)..."
 cd data
 
-curl -L -o test_1.fastq.gz \
+# Sample 1 (test data from nf-core)
+echo "Downloading sample1..."
+curl -L -o sample1_R1.fastq.gz \
   https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/illumina/fastq/test_1.fastq.gz
-echo "✓ test_1.fastq.gz downloaded"
+echo "✓ sample1_R1.fastq.gz downloaded"
 
-curl -L -o test_2.fastq.gz \
+curl -L -o sample1_R2.fastq.gz \
   https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/illumina/fastq/test_2.fastq.gz
-echo "✓ test_2.fastq.gz downloaded"
+echo "✓ sample1_R2.fastq.gz downloaded"
+
+# Sample 2 (copy of sample1 for multi-sample testing)
+echo "Creating sample2 (copy of sample1 for testing)..."
+cp sample1_R1.fastq.gz sample2_R1.fastq.gz
+cp sample1_R2.fastq.gz sample2_R2.fastq.gz
+echo "✓ sample2 created"
+
+# Sample 3 (copy of sample1 for multi-sample testing)
+echo "Creating sample3 (copy of sample1 for testing)..."
+cp sample1_R1.fastq.gz sample3_R1.fastq.gz
+cp sample1_R2.fastq.gz sample3_R2.fastq.gz
+echo "✓ sample3 created"
 
 cd ..
 
@@ -93,10 +107,21 @@ echo ""
 echo "Known sites VCFs:"
 ls -lh reference/*.vcf.gz* 2>/dev/null || true
 echo ""
-echo "Test FASTQ files:"
+echo "Test FASTQ files (3 samples):"
 ls -lh data/*.fastq.gz 2>/dev/null || true
 echo ""
 echo "=========================================="
-echo "You can now run the pipeline with:"
+echo "You can now run the pipelines:"
+echo ""
+echo "Bash pipeline (single sample):"
+echo "  cd workflows/bash"
 echo "  pixi run bash gatk_pipeline.sh"
+echo ""
+echo "Nextflow pipeline (single sample):"
+echo "  cd workflows/nextflow"
+echo "  nextflow run main.nf -profile singularity,test -resume"
+echo ""
+echo "Nextflow pipeline (multi-sample):"
+echo "  cd workflows/nextflow"
+echo "  nextflow run main.nf -profile singularity --input samplesheet.csv -resume"
 echo "=========================================="

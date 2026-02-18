@@ -6,6 +6,12 @@ pixi.lock
 data/
 reference/
 results/
+results_*/
+
+# Nextflow work and cache
+work/
+.nextflow/
+.nextflow.log*
 
 # Logs
 *.log
@@ -15,11 +21,15 @@ pipeline.log
 *.bam
 *.bai
 *.vcf
+*.vcf.gz
 *.vcf.idx
 *.table
 *.txt
 *.zip
 *.html
+*.pdf
+*.fq.gz
+*.fastq.gz
 
 # System files
 .DS_Store
